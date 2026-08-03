@@ -25,10 +25,15 @@ name **Luke** — this board's own history, not assumed or invented.
 - [What's in this board](#whats-in-this-board)
 - [Technical specifications](#technical-specifications)
 - [Signal names found in the schematics](#signal-names-found-in-the-schematics)
+- [Connectors](#connectors)
 - [System architecture](#system-architecture)
+- [Parts catalog](#parts-catalog)
 - [Repository contents](#repository-contents)
 - [Opening the project](#opening-the-project)
+- [Getting started](#getting-started)
 - [Safety & disclaimer](#safety--disclaimer)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
 - [License](#license)
 
 ---
@@ -87,6 +92,19 @@ guessed from silkscreen or footprint alone.
 - **Microcontroller**: `XIN`/`XOUT` (crystal), `GND`
 - **USB/power**: `USB_POWER`, `5V`, `GND`
 
+## Connectors
+
+Real header connectors present on the board, per sheet (verified by counting `LIBREFERENCE=` entries
+directly in each `.SchDoc`) — what each one carries is stated only where the schematic's own net
+labels confirm it, not guessed:
+
+| Sheet | Connector | Type | Confirmed signals |
+|---|---|---|---|
+| Each `EEG_x.SchDoc` (×4) | (unlabeled) | 1× 8×2 header | **Not confirmed** — no net labels cross this header in the schematic; almost certainly the ADS1299↔MCU SPI/control bus, but the exact pin assignment isn't recoverable from these files. See [System architecture](#system-architecture). |
+| Each `EEG_x.SchDoc` (×4) | (unlabeled) | 1× 4-pin header, 2× 2-pin headers | **Not confirmed** — same limitation as above |
+| `Libraries/JTAG_Connector.SchDoc` | JTAG | 1× 10×2 (20-pin) header | Standard 20-pin ARM JTAG/SWD debug header, shared across the design |
+| `USB_Controller.SchDoc` | USB-B | THT USB Type-B | `USB_POWER`, `5V`, `GND` (confirmed via net labels) |
+
 ## System architecture
 
 ```mermaid
@@ -118,6 +136,31 @@ header connector instead, without descriptive pin names. Unlike Adam-EEG (where 
 was explicitly labeled net-by-net and could be verified), this board's exact SPI topology — daisy-chain
 vs. individual per-chip bus vs. something else — is a real, disclosed gap: not fabricated as a
 "probably daisy-chained like Adam-EEG" guess, and not hidden either.
+
+## Parts catalog
+
+The real 39-line-item catalog from `Soul_EEG.BomDoc` (Altium's "Live BOM"), grouped by distinct
+part/footprint. This lists *what part types exist in the design*, not a per-designator BOM with a
+value for every individual resistor/capacitor instance — the live-BOM export groups those by generic
+footprint (`C1206`, `Res3`) rather than by real per-instance value, and that per-designator linkage
+isn't recoverable from these files without a full Altium binary parser (not attempted — stated
+honestly rather than guessed at).
+
+| Part / footprint | Value / variant | Description | Qty (catalog entries) |
+|---|---|---|---|
+| ADS1299 | — | TI 24-bit 8-ch biopotential ADC | 1 |
+| ATSAM3U4EA-AU | — | AT91 ARM Cortex-M3, 144-pin LQFP | 1 |
+| TPS63001DRCR | — | TI buck-boost converter, 10-pin SON | 1 |
+| ABM8 Crystal 4-SMD XTAL_1 | — | SMD crystal | 1 |
+| USB_TypeB | USB-B | THT USB Type-B connector | 1 |
+| Cap Semi | 4.7nF | Capacitor (semiconductor SIM model) | 1 real value + 25 generic-footprint entries |
+| Res3 | 4.99KΩ | Resistor | 1 real value + 13 generic-footprint entries |
+| Inductor | — | Inductor | 1 |
+| LED0 | Green | LED | 1 |
+| Header 2 | — | 2-pin header | 1 |
+| Header 4 | — | 4-pin header | 1 |
+| Header 8×2 | — | 16-pin dual-row header | 1 |
+| Header 10×2 | — | 20-pin dual-row header (JTAG) | 1 |
 
 ## Repository contents
 
@@ -157,12 +200,40 @@ Open `SOUL_EEG/SOUL_EEG.PrjPcb` in Altium Designer (2015-era or newer — Altium
 file-format compatibility). All 7 library references now resolve relative to the project file, so no
 manual path fix-up is needed after cloning.
 
+## Getting started
+
+1. You'll need **Altium Designer** — unlike Adam-EEG's EAGLE source, there's no free-tier open-source
+   viewer that renders native `.SchDoc`/`.PcbDoc` files (Altium's own free "Altium 365 Viewer" can open
+   them read-only in a browser if you don't have a full license).
+2. Clone this repo and open `SOUL_EEG/SOUL_EEG.PrjPcb` directly — no path fix-up needed (see above).
+3. Reference datasheets, for the exact part numbers used in this design:
+   [ADS1299](https://www.ti.com/product/ADS1299) ·
+   [ATSAM3U4EA-AU](https://www.microchip.com/en-us/product/atsam3u4e) ·
+   [TPS63001](https://www.ti.com/product/TPS63001)
+4. Gerbers/drill files are not checked in — generate them from `SOUL_EEG_PCB_Rev1.PcbDoc` via
+   `SOUL_EEG.OutJob` if you're sending this to fab.
+
 ## Safety & disclaimer
 
 This is a research/hobbyist biopotential acquisition board, not a certified medical device. If
 building this to record real physiological signals, use proper isolation (USB isolation, battery
 power, no mains-referenced ground) and follow standard biopotential safety practice before connecting
 anything to a person.
+
+## Roadmap
+
+This 2015 quad-ADS1299 ARM board is a real, standalone alternative to
+[Adam-EEG](https://github.com/shiva16/Adam-EEG)'s EAGLE/dual-ATmega328 design — not a fork of it, and
+not superseded by it. The single biggest open item is documented above in
+[System architecture](#system-architecture) and [Connectors](#connectors): the real ADS1299↔MCU SPI
+bus topology and per-pin header signal names aren't recoverable from the schematic files as they
+stand, only from opening the project in Altium and tracing the routed wires directly.
+
+## Contributing
+
+Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Whether it's tracing
+the real SPI bus topology, a KiCad conversion, a BOM/sourcing update, or a build log from your own fab
+run, please open an issue first so we can track it.
 
 ## License
 
