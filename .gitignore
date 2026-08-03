@@ -1,44 +1,41 @@
-# Ignore list for Eagle, a PCB layout tool
+# Altium Designer
 
-# Backup files
-*.s#?
-*.b#?
-*.l#?
+# Backup/history
+*.~*
+__History/
+__Previews/
+*.PcbDoc.Bak*
+*.SchDoc.Bak*
 
-# Eagle project file
-# It contains a serial number and references to the file structure
-# on your computer.
-# comment the following line if you want to have your project file included.
-eagle.epf
-
-# Autorouter files
-*.pro
-*.job
-
-# CAM files
+# Local project cache
 *.$$$
-*.cmp
-*.ly2
-*.l15
-*.sol
-*.plc
-*.stc
-*.sts
-*.crc
-*.crs
+*.Cache
+Project Logs*/
+Project Outputs*/
+Recycle Bin/
 
-*.dri
+# User-specific
+*.PrjPcbUser
+*.DdbUser
+
+# CAM/Gerber/manufacturing output (regenerable from the project)
+*.g1
+*.g2
+*.g3
+*.gko
+*.gtl
+*.gbl
+*.gto
+*.gbo
+*.gts
+*.gbs
+*.gtp
+*.gbp
 *.drl
-*.gpi
-*.pls
-
-*.drd
-*.drd.*
-
-*.info
-
-*.eps
-
-# file locks introduced since 7.x
-*.lck
-
+*.apr
+*.dri
+*.rep
+*.rul
+*.extrep
+*.ldp
+*.drr
