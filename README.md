@@ -25,6 +25,7 @@ name **Luke** — this board's own history, not assumed or invented.
 - [What's in this board](#whats-in-this-board)
 - [Technical specifications](#technical-specifications)
 - [Signal names found in the schematics](#signal-names-found-in-the-schematics)
+- [System architecture](#system-architecture)
 - [Repository contents](#repository-contents)
 - [Opening the project](#opening-the-project)
 - [Safety & disclaimer](#safety--disclaimer)
@@ -85,6 +86,38 @@ guessed from silkscreen or footprint alone.
 - **Analog supply**: `VCAP1_1`–`VCAP4_1` (ADS1299's internal charge-pump decoupling nodes), `5V`, `GND`
 - **Microcontroller**: `XIN`/`XOUT` (crystal), `GND`
 - **USB/power**: `USB_POWER`, `5V`, `GND`
+
+## System architecture
+
+```mermaid
+flowchart LR
+    subgraph AFE["Analog Front End"]
+        A1["ADS1299 #1<br/>ch 1-8<br/>(EEG_1.SchDoc)"]
+        A2["ADS1299 #2<br/>ch 9-16<br/>(EEG_2.SchDoc)"]
+        A3["ADS1299 #3<br/>ch 17-24<br/>(EEG_3.SchDoc)"]
+        A4["ADS1299 #4<br/>ch 25-32<br/>(EEG_4.SchDoc)"]
+    end
+    MCU["ATSAM3U4EA-AU<br/>ARM Cortex-M3"]
+    A1 -- "8x2 header" --- MCU
+    A2 -- "8x2 header" --- MCU
+    A3 -- "8x2 header" --- MCU
+    A4 -- "8x2 header" --- MCU
+    XTAL["ABM8 crystal<br/>XIN/XOUT"] --> MCU
+    JTAG["JTAG header"] -.-> MCU
+    USB["TPS63001 buck-boost<br/>+ USB Type-B"] -- "USB_POWER" --> PWR
+    PWR["5V / 3.3V / 1.8V rails"] --> AFE
+    PWR --> MCU
+```
+
+Each ADS1299 sheet is identical (42 parts) and samples 8 channels; four of them make the full 32.
+**What's verified vs. what isn't**: the shared power rails (`5V`/`3.3V`/`1.8V`/`GND`) and the USB/crystal/
+JTAG connections above are real, confirmed directly from net labels and ports in the schematic files.
+The digital bus between each ADS1299 sheet and the MCU (SPI clock/data/chip-select/data-ready) is
+**not** carried by named net labels anywhere in these files — it's wired through each sheet's 8×2
+header connector instead, without descriptive pin names. Unlike Adam-EEG (where the SPI daisy-chain
+was explicitly labeled net-by-net and could be verified), this board's exact SPI topology — daisy-chain
+vs. individual per-chip bus vs. something else — is a real, disclosed gap: not fabricated as a
+"probably daisy-chained like Adam-EEG" guess, and not hidden either.
 
 ## Repository contents
 
